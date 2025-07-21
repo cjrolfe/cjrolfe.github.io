@@ -19,21 +19,19 @@
 </head>
 <body>
 
-<div class="background-container">
+<!-- <div class="background-container">
   <img src="background.png" alt="Background">
-</div>
+</div> -->
 
 <script type="text/javascript" 
              id='init-agentforce-messaging' 
              src='https://test-service.force.com/embeddedservice/agentforcemessaging/0.3/init.js' 
              onload='agentforce_messaging.init({
-                    "siteUrl": "https://deevo-demo.my.site.com/NGC1",
-                    "agentApiConfiguration": {
-                            "siteUrl": "https://storm-11a2efb0800c35.my.site.com/AFMNGCSurfaces1752157856914",
+                    "siteUrl": "https://storm-11a2efb0800c35.my.site.com/AFMNGCSurfaces1752157856914",
                 "agentApiConfiguration": {
                         "agentId": "0XxKa0000005oPoKAI", 
                         "domainUrl": "https://storm-11a2efb0800c35.my.salesforce.com",
-                        "endpoint": "https://api.salesforce.com/einstein/ai-agent/v1.1/agents/0XxKa0000005oPoKAI/sessions",
+                        "endpoint": "https://api.salesforce.com/einstein/ai-agent/v1.1/agents/{AGENT_ID}/sessions",
                         "voiceEndpoint": "https://api.salesforce.com/einstein/ai-agent/v1.1/realtime/sessions/{SESSION_ID}/join",
                         "authTokenEndpoint": "https://storm-11a2efb0800c35.my.site.com/AFMNGCSurfaces1752157856914/ag "https://storm-11a2efb0800c35.my.site.com/AFMNGCSurfaces1752157856914/agentforce/bootstrap?agentid=0XxKa0000005oPoKAI"
                     },
