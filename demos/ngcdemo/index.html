@@ -1,54 +1,83 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="robots" content="noindex">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Demos Index</title>
-    <style>
-      body {
-        padding: 1em;
-      }
-      table {
-        border-collapse: collapse;
-        width: 75%;
-        min-width: 800px;
-      }
-      th, td {
-        border: 1px solid #ddd;
-        padding: 8px;
-        text-align: left;
-        white-space: nowrap;
-      }
-      th {
-        background-color: #f2f2f2;
-        font-weight: bold;
-      }
-      a:hover {
-        text-decoration: underline;
-      }
-      .agent-id {
-        font-family: monospace;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Demos</h1>
-    <table>
-      <thead>
-        <tr>
-          <th>Demo</th>
-          <th>Org</th>
-          <th>Agent ID</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><a href="./ngcdemo/">NGC Demo</a></td>
-          <td><a href="https://storm-11a2efb0800c35.my.salesforce.com" target="_blank">https://storm-11a2efb0800c35.my.salesforce.com</a></td>
-          <td><span class="agent-id">0XxKa0000005oPoKAI</span></td>
-        </tr>
-      </tbody>
-    </table>
-  </body>
+<html>
+<head>
+  <title>NGC Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+  <meta name="robots" content="noindex">
+  <style>
+    body {
+      margin: 0;
+    }
+    .background-container {
+      width: 100%;
+    }
+    .background-container img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+
+<div class="background-container">
+  <img src="background.png" alt="Background">
+</div>
+
+<script type="text/javascript" 
+             id='init-agentforce-messaging' 
+             src='https://test-service.force.com/embeddedservice/agentforcemessaging/0.3/init.js' 
+             onload='agentforce_messaging.init({
+                    "siteUrl": "https://deevo-demo.my.site.com/NGC1",
+                    "agentApiConfiguration": {
+                            "siteUrl": "https://storm-11a2efb0800c35.my.site.com/AFMNGCSurfaces1752157856914",
+                "agentApiConfiguration": {
+                        "agentId": "0XxKa0000005oPoKAI", 
+                        "domainUrl": "https://storm-11a2efb0800c35.my.salesforce.com",
+                        "endpoint": "https://api.salesforce.com/einstein/ai-agent/v1.1/agents/0XxKa0000005oPoKAI/sessions",
+                        "voiceEndpoint": "https://api.salesforce.com/einstein/ai-agent/v1.1/realtime/sessions/{SESSION_ID}/join",
+                        "authTokenEndpoint": "https://storm-11a2efb0800c35.my.site.com/AFMNGCSurfaces1752157856914/ag "https://storm-11a2efb0800c35.my.site.com/AFMNGCSurfaces1752157856914/agentforce/bootstrap?agentid=0XxKa0000005oPoKAI"
+                    },
+                    "uiConfiguration": {
+                      components: {
+                        chatFab: { 
+                          cta: "Ask Agentforce", 
+                          iconUrl: "https://swift-eagle-development.s3.us-east-2.amazonaws.com/releases/ngc/0.3/chat-bubble.svg" 
+                        },
+                        chatHeader: {
+                          agentName: "Agentforce Agent",
+                          backgroundColor: "#263EDB",
+                          textColor: "#FFFFFF",
+                        },
+                        chatInput: {
+                          backgroundColor: "#F4F6F9",
+                          textColor: "#032D60",
+                          placeholder: "Type your Demo question...",
+                          poweredByEnabled: true,
+                        },
+                        chatWindow: {
+                          backgroundColor: "#FFFFFF",
+                          loadingText: "HELLO",
+                        },
+                        chatMessage: {
+                          agent: {
+                            backgroundColor: "#F3F4F6",
+                            textColor: "#000000",
+                            avatarEnabled: true,
+                            iconUrl:
+                              "https://swift-eagle-development.s3.us-east-2.amazonaws.com/releases/ngc/0.3/agent-icon.svg",
+                          },
+                          user: {
+                            backgroundColor: "#263EDB",
+                            textColor: "#FFFFFF",
+                          },
+                          metadata: {
+                            textColor: "#888888", 
+                          },
+                        },
+                      },
+                    }
+            });'>
+</script>
+
+</body>
 </html>
