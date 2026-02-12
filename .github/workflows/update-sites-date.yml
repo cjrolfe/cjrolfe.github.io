@@ -1,0 +1,47 @@
+name: Update sites.json date
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  update-date:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Update updated date in assets/sites.json
+        shell: bash
+        run: |
+          set -e
+
+          FILE="assets/sites.json"
+          TODAY=$(date -u +"%Y-%m-%d")
+
+          if [ ! -f "$FILE" ]; then
+            echo "❌ $FILE not found"
+            exit 0
+          fi
+
+          # Replace the value of "updated": "YYYY-MM-DD"
+          sed -i "s/\"updated\"[[:space:]]*:[[:space:]]*\"[0-9-]*\"/\"updated\": \"$TODAY\"/" "$FILE"
+
+      - name: Commit changes (if any)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add assets/sites.json
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: update sites.json date"
+            git push
+          fi
