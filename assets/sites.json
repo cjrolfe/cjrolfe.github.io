@@ -7,7 +7,7 @@
 ,
     { "name": "company-c", "path": "/company-c/", "description": "" }
 ,
-    { "name": "rossellimac", "path": "/rossellimac/", "description": "" }
+    { "name": "rossellimac", "path": "/rossellimac/", "description": "", "logoUrl": "https://sfdcdemoimages.s3.eu-west-1.amazonaws.com/rossellimac/logo.png" }
 
   ]
 }
