@@ -75,9 +75,32 @@
     </section>
   </main>
 
+
+
   <script>
     document.getElementById("lu").textContent = new Date().toISOString().slice(0, 10);
     document.getElementById("btn").addEventListener("click", () => alert("JS works ✅"));
   </script>
+
+  <script type='text/javascript'>
+	function initEmbeddedMessaging() {
+		try {
+			embeddedservice_bootstrap.settings.language = 'en_US'; // For example, enter 'en' or 'en-US'
+
+			embeddedservice_bootstrap.init(
+				'00DJ6000002FeRa',
+				'RosselliXSF',
+				'https://storm-0d6bdc021e90fa.my.site.com/ESWRosselliXSF1770913065768',
+				{
+					scrt2URL: 'https://storm-0d6bdc021e90fa.my.salesforce-scrt.com'
+				}
+			);
+		} catch (err) {
+			console.error('Error loading Embedded Messaging: ', err);
+		}
+	};
+</script>
+<script type='text/javascript' src='https://storm-0d6bdc021e90fa.my.site.com/ESWRosselliXSF1770913065768/assets/js/bootstrap.min.js' onload='initEmbeddedMessaging()'></script>
+
 </body>
 </html>
