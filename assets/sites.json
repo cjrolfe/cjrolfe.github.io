@@ -6,6 +6,8 @@
     { "name": "company-b", "path": "/company-b/", "description": "" }
 ,
     { "name": "company-c", "path": "/company-c/", "description": "" }
+,
+    { "name": "rossellimac", "path": "/rossellimac/", "description": "" }
 
   ]
 }
