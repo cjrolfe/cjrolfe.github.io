@@ -1,15 +1,45 @@
 {
   "updated": "2026-02-12",
   "sites": [
-    { "name": "company-a", "path": "/company-a/", "description": "" }
-,
-    { "name": "company-b", "path": "/company-b/", "description": "" }
-,
-    { "name": "company-c", "path": "/company-c/", "description": "" }
-,
-    { "name": "company-template", "path": "/company-template/", "description": "" }
-,
-    { "name": "rossellimac", "path": "/rossellimac/", "description": "" }
-
+    {
+      "id": "company-a",
+      "name": "Company A",
+      "path": "/company-a/",
+      "description": "",
+      "tag": "Demo",
+      "logoUrl": "https://sfdcdemoimages.s3.eu-west-1.amazonaws.com/company-a/logo.png"
+    },
+    {
+      "id": "company-b",
+      "name": "Company B",
+      "path": "/company-b/",
+      "description": "",
+      "tag": "Demo",
+      "logoUrl": "https://sfdcdemoimages.s3.eu-west-1.amazonaws.com/company-b/logo.png"
+    },
+    {
+      "id": "company-c",
+      "name": "Company C",
+      "path": "/company-c/",
+      "description": "",
+      "tag": "Demo",
+      "logoUrl": "https://sfdcdemoimages.s3.eu-west-1.amazonaws.com/company-c/logo.png"
+    },
+    {
+      "id": "company-template",
+      "name": "Company Template",
+      "path": "/company-template/",
+      "description": "",
+      "tag": "Demo",
+      "logoUrl": "https://sfdcdemoimages.s3.eu-west-1.amazonaws.com/company-template/logo.png"
+    },
+    {
+      "id": "rossellimac",
+      "name": "Rossellimac",
+      "path": "/rossellimac/",
+      "description": "",
+      "tag": "Demo",
+      "logoUrl": "https://sfdcdemoimages.s3.eu-west-1.amazonaws.com/rossellimac/logo.png"
+    }
   ]
 }
