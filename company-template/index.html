@@ -1,22 +1,83 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Company Template</title>
+  <title>Company Template • Demo</title>
+  <link rel="stylesheet" href="/assets/styles.css" />
 </head>
 <body>
-  <nav>
-    <a href="/">← Back to index</a>
-  </nav>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <div class="brand">
+        <div class="mark" aria-hidden="true"></div>
+        <div>
+          <div class="brand-name">Company Name</div>
+          <div class="brand-sub">Demo environment</div>
+        </div>
+      </div>
+      <nav class="topbar-actions" aria-label="Company navigation">
+        <a class="btn ghost" href="/">Back to index</a>
+      </nav>
+    </div>
+  </header>
 
-  <h1>Company Template Test Site</h1>
-  <button id="btn">Click me</button>
+  <main class="wrap">
+    <section class="hero">
+      <div class="hero-row">
+        <div>
+          <h1 style="margin:0 0 8px;">Company Name</h1>
+          <p>
+            Short blurb: what this demo is, what’s included, and any guardrails.
+          </p>
+
+          <div class="hero-meta">
+            <span class="pill">Owner: Swordthain</span>
+            <span class="pill">Environment: Demo</span>
+            <span class="pill">Last updated: <span id="lu">—</span></span>
+          </div>
+        </div>
+
+        <div class="hero-card">
+          <div class="card-head" style="margin-bottom: 8px;">
+            <img class="logo" src="https://sfdcdemoimages.s3.eu-west-1.amazonaws.com/company-name/logo.png"
+                 alt="Company logo" loading="lazy" />
+            <div>
+              <div style="font-weight:650;">Logo placeholder</div>
+              <div style="opacity:.7;font-size:12px;">Update the S3 path</div>
+            </div>
+          </div>
+
+          <div style="opacity:.75;font-size:12px;line-height:1.4;">
+            Store images in S3: <code>s3://sfdcdemoimages/&lt;company&gt;/...</code><br/>
+            Reference them via HTTPS in this page and <code>assets/sites.json</code>.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="grid">
+        <article class="card">
+          <h3>Demo links</h3>
+          <p>Add links to key pages or journeys for this company.</p>
+          <div class="row">
+            <span class="tag">Start here</span>
+            <a class="btn" href="#todo">Open demo</a>
+          </div>
+        </article>
+
+        <article class="card">
+          <h3>Notes</h3>
+          <p>Credentials, constraints, known limitations, data refresh notes.</p>
+          <span class="tag">Internal</span>
+        </article>
+      </div>
+    </section>
+  </main>
 
   <script>
-    document.getElementById("btn").addEventListener("click", () => {
-      alert("JS works ✅");
-    });
+    document.getElementById("lu").textContent = new Date().toISOString().slice(0, 10);
   </script>
 </body>
 </html>
