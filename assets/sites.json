@@ -7,6 +7,8 @@
 ,
     { "name": "company-c", "path": "/company-c/", "description": "" }
 ,
+    { "name": "company-template", "path": "/company-template/", "description": "" }
+,
     { "name": "rossellimac", "path": "/rossellimac/", "description": "" }
 
   ]
