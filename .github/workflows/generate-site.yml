@@ -1,0 +1,50 @@
+name: Generate sites.json
+
+on:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build assets/sites.json
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p assets
+
+          # Find top-level directories (exclude .github and assets) that contain index.html
+          sites=$(find . -maxdepth 2 -mindepth 2 -type f -name index.html \
+            | sed 's|^\./||' \
+            | awk -F/ '{print $1}' \
+            | sort -u \
+            | grep -vE '^(\.github|assets)$' || true)
+
+          echo '{' > assets/sites.json
+          echo '  "updated": "'"$(date -u +%F)"'",' >> assets/sites.json
+          echo '  "sites": [' >> assets/sites.json
+
+          first=1
+          while read -r dir; do
+            [ -z "$dir" ] && continue
+            if [ $first -eq 0 ]; then echo ',' >> assets/sites.json; fi
+            first=0
+            echo '    { "name": "'"$dir"'", "path": "/'"$dir"'/", "description": "" }' >> assets/sites.json
+          done <<< "$sites"
+
+          echo '' >> assets/sites.json
+          echo '  ]' >> assets/sites.json
+          echo '}' >> assets/sites.json
+
+      - name: Commit changes (if any)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add assets/sites.json
+          git diff --cached --quiet || (git commit -m "Auto-generate sites.json" && git push)
