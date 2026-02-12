@@ -1,42 +1,78 @@
 (async function () {
-  const container = document.getElementById("sites");
-  const updated = document.getElementById("updated");
+  const cardsEl = document.getElementById("cards");
+  const updatedEl = document.getElementById("updated");
+  const yearEl = document.getElementById("year");
+  const searchEl = document.getElementById("search");
 
+  yearEl.textContent = String(new Date().getFullYear());
+
+  let sites = [];
   try {
-    // Cache-bust so updates show quickly
     const res = await fetch(`/assets/sites.json?v=${Date.now()}`);
-    if (!res.ok) throw new Error(`Failed to load sites.json (${res.status})`);
-
+    if (!res.ok) throw new Error(`Failed to load sites.json (HTTP ${res.status})`);
     const data = await res.json();
-    const sites = Array.isArray(data.sites) ? data.sites : [];
+    updatedEl.textContent = `Updated: ${data.updated || "—"}`;
+    sites = Array.isArray(data.sites) ? data.sites : [];
+  } catch (e) {
+    cardsEl.innerHTML = `<div class="card"><h3>Couldn’t load site list</h3><p>${escapeHtml(e.message)}</p></div>`;
+    return;
+  }
 
-    if (!sites.length) {
-      container.innerHTML = `<div class="card"><h2>No sites yet</h2><p>Add folders + update assets/sites.json.</p></div>`;
+  function render(filterText = "") {
+    const q = (filterText || "").trim().toLowerCase();
+
+    const filtered = sites
+      .slice()
+      .sort((a,b) => (a.name||"").localeCompare(b.name||""))
+      .filter(s => {
+        if (!q) return true;
+        const hay = `${s.id} ${s.name} ${s.description||""} ${s.tag||""}`.toLowerCase();
+        return hay.includes(q);
+      });
+
+    if (!filtered.length) {
+      cardsEl.innerHTML = `<div class="card"><h3>No matches</h3><p>Try a different search.</p></div>`;
       return;
     }
 
-    // Sort by name
-    sites.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    cardsEl.innerHTML = filtered.map(s => {
+      const path = (s.path || "/").endsWith("/") ? s.path : (s.path + "/");
+      const tag = s.tag || "Demo";
+      const desc = s.description || "";
+      const logo = s.logoUrl
+        ? `<img class="logo" src="${escapeAttr(s.logoUrl)}" alt="${escapeAttr(s.name)} logo" loading="lazy" />`
+        : `<div class="logo" aria-hidden="true"></div>`;
 
-    container.innerHTML = sites.map(s => {
-      const path = s.path.endsWith("/") ? s.path : (s.path + "/");
       return `
         <article class="card">
-          <h2>${escapeHtml(s.name || s.path)}</h2>
-          <p>${escapeHtml(s.description || "")}</p>
-          <a href="${path}">Open site</a>
+          <div class="card-head">
+            ${logo}
+            <div>
+              <h3>${escapeHtml(s.name || s.id)}</h3>
+              <div style="opacity:.7;font-size:12px;">${escapeHtml(path)}</div>
+            </div>
+          </div>
+
+          <p>${escapeHtml(desc)}</p>
+
+          <div class="row">
+            <span class="tag">${escapeHtml(tag)}</span>
+            <a class="btn" href="${path}">Open</a>
+          </div>
         </article>
       `;
     }).join("");
-
-    if (data.updated) updated.textContent = `Updated: ${data.updated}`;
-  } catch (e) {
-    container.innerHTML = `<div class="card"><h2>Couldn’t load sites</h2><p>${escapeHtml(e.message)}</p></div>`;
   }
+
+  searchEl?.addEventListener("input", () => render(searchEl.value));
+  render();
 
   function escapeHtml(str) {
     return String(str).replace(/[&<>"']/g, m => ({
-      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
     }[m]));
+  }
+  function escapeAttr(str) {
+    return String(str).replace(/"/g, "&quot;");
   }
 })();
