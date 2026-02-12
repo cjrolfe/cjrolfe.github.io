@@ -3,27 +3,78 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Swordthain Test Sites</title>
+  <title>Swordthain Demo Sites</title>
+  <meta name="description" content="Internal demo environments for customer prototypes and technical validation." />
   <link rel="stylesheet" href="/assets/styles.css" />
 </head>
 <body>
-  <header class="wrap">
-    <h1>Swordthain Test Sites</h1>
-    <p class="sub">Pick an environment below.</p>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <div class="brand">
+        <div class="mark" aria-hidden="true"></div>
+        <div>
+          <div class="brand-name">Swordthain</div>
+          <div class="brand-sub">Demo environments</div>
+        </div>
+      </div>
+
+      <nav class="topbar-actions" aria-label="Header actions">
+        <a class="btn ghost" href="https://github.com/cjrolfe/cjrolfe.github.io" target="_blank" rel="noreferrer">GitHub</a>
+      </nav>
+    </div>
   </header>
 
   <main class="wrap">
-    <section id="sites" class="grid" aria-live="polite">
-      <div class="card">Loading sites…</div>
+    <section class="hero">
+      <div class="hero-row">
+        <div>
+          <h1>Client demo sites</h1>
+          <p>
+            A directory of internal test sites for customer demos, prototypes, and technical validation.
+            Each company has an isolated folder (e.g. <code>/company-a</code>).
+          </p>
+
+          <div class="hero-meta">
+            <span class="pill" id="updated">Updated: —</span>
+            <span class="pill">Hosting: GitHub Pages</span>
+            <span class="pill">Images: AWS S3 (eu-west-1)</span>
+          </div>
+        </div>
+
+        <div class="hero-card">
+          <div class="hero-card-title">Quick actions</div>
+          <div class="hero-card-actions">
+            <a class="btn" href="#sites">Browse sites</a>
+            <a class="btn ghost" href="/company-template/">Open template</a>
+          </div>
+          <div class="hero-card-note">
+            Tip: add a new company by creating <code>/company-x/index.html</code> and adding it to <code>assets/sites.json</code>.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="sites">
+      <div class="section-head">
+        <h2>Sites</h2>
+        <div class="section-controls">
+          <input id="search" class="search" type="search" placeholder="Search company, tag, description…" />
+        </div>
+      </div>
+
+      <div id="cards" class="grid" aria-live="polite">
+        <div class="card skeleton"></div>
+        <div class="card skeleton"></div>
+        <div class="card skeleton"></div>
+      </div>
     </section>
   </main>
 
   <footer class="wrap footer">
-    <small>Hosted on GitHub Pages • <span id="updated"></span></small>
+    <small>© <span id="year"></span> Swordthain • Built for demos</small>
   </footer>
 
   <script src="/assets/app.js"></script>
 </body>
 </html>
-
 
