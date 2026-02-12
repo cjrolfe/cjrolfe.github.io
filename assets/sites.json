@@ -1,37 +1,15 @@
 {
   "updated": "2026-02-12",
   "sites": [
-    {
-      "id": "company-a",
-      "name": "Company A",
-      "path": "/company-a/",
-      "description": "Salesforce demo environment for Company A (Agentforce flows, UI prototypes).",
-      "tag": "Agentforce",
-      "logoUrl": "https://sfdcdemoimages.s3.eu-west-1.amazonaws.com/company-a/logo.png"
-    },
-    {
-      "id": "company-b",
-      "name": "Company B",
-      "path": "/company-b/",
-      "description": "Prototype site for Company B (meter reads, usage journeys).",
-      "tag": "Prototype",
-      "logoUrl": "https://sfdcdemoimages.s3.eu-west-1.amazonaws.com/company-b/logo.png"
-    },
-    {
-      "id": "company-c",
-      "name": "Company C",
-      "path": "/company-c/",
-      "description": "Prototype site for Company C (meter reads, usage journeys).",
-      "tag": "Prototype",
-      "logoUrl": "https://sfdcdemoimages.s3.eu-west-1.amazonaws.com/company-c/logo.png"
-    },
-    {
-      "id": "rossellimac",
-      "name": "RosselliMac",
-      "path": "/rossellimac/",
-      "description": "Prototype site for RosselliMac.",
-      "tag": "Prototype",
-      "logoUrl": "https://sfdcdemoimages.s3.eu-west-1.amazonaws.com/rossellimac/logo.png"
-    }
+    { "name": "company-a", "path": "/company-a/", "description": "" }
+,
+    { "name": "company-b", "path": "/company-b/", "description": "" }
+,
+    { "name": "company-c", "path": "/company-c/", "description": "" }
+,
+    { "name": "company-template", "path": "/company-template/", "description": "" }
+,
+    { "name": "rossellimac", "path": "/rossellimac/", "description": "" }
+
   ]
 }
