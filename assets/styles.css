@@ -165,6 +165,14 @@ code{
     inset 0 0 0 1px rgba(255,255,255,.6);
 }
 
+.hero-card .logo{
+  width:64px;
+  height:64px;
+  padding:8px;
+  border-radius:16px;
+}
+
+
 
 .card h3{ margin:0; font-size:16px; }
 .card p{ margin:0 0 14px; color:var(--muted); min-height: 38px; }
