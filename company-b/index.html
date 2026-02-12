@@ -1,14 +1,23 @@
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>Company B Test Site</title>
-  <link rel="stylesheet" href="css/styles.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Company B</title>
 </head>
 <body>
-  <h1>Company A</h1>
-  <p>This is a test environment.</p>
+  <nav>
+    <a href="/">← Back to index</a>
+  </nav>
 
-  <script src="js/script.js"></script>
+  <h1>Company B Test Site</h1>
+  <button id="btn">Click me</button>
+
+  <script>
+    document.getElementById("btn").addEventListener("click", () => {
+      alert("JS works ✅");
+    });
+  </script>
 </body>
 </html>
+

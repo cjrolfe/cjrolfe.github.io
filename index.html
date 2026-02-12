@@ -1,16 +1,29 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Swordthain Test Environments</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Swordthain Test Sites</title>
+  <link rel="stylesheet" href="/assets/styles.css" />
 </head>
 <body>
-  <h1>Test Sites</h1>
-  <ul>
-    <li><a href="/company-a/">Company A</a></li>
-    <li><a href="/company-b/">Company B</a></li>
-    <li><a href="/company-c/">Company C</a></li>
-  </ul>
+  <header class="wrap">
+    <h1>Swordthain Test Sites</h1>
+    <p class="sub">Pick an environment below.</p>
+  </header>
+
+  <main class="wrap">
+    <section id="sites" class="grid" aria-live="polite">
+      <div class="card">Loading sites…</div>
+    </section>
+  </main>
+
+  <footer class="wrap footer">
+    <small>Hosted on GitHub Pages • <span id="updated"></span></small>
+  </footer>
+
+  <script src="/assets/app.js"></script>
 </body>
 </html>
+
 

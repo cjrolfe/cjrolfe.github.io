@@ -1,0 +1,8 @@
+{
+  "updated": "2026-02-11",
+  "sites": [
+    { "name": "Company A", "path": "/company-a/", "description": "Basic test site for Company A" },
+    { "name": "Company B", "path": "/company-b/", "description": "Basic test site for Company B" },
+    { "name": "Company C", "path": "/company-c/", "description": "Basic test site for Company C" }
+  ]
+}
