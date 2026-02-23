@@ -1,0 +1,36 @@
+name: Generate sites.json
+
+on:
+  push:
+    branches: ["main"]
+    # Only regenerate when folders/template change.
+    # (Avoids creating "date-only" commits on every push.)
+    paths:
+      - "*/index.html"
+      - "company-template/**"
+      - "scripts/generate_sites.py"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate assets/sites.json
+        run: python3 scripts/generate_sites.py
+
+      - name: Commit changes (if any)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add assets/sites.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: update assets/sites.json"
+            git push
+          fi

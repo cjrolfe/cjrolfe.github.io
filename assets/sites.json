@@ -1,0 +1,50 @@
+{
+  "updated": "2026-02-17",
+  "sites": [
+    {
+      "id": "bbc",
+      "name": "BBC",
+      "path": "/bbc/",
+      "description": "The best of the BBC, with the latest news and sport headlines, weather, TV & radio highlights and much more from across the whole of BBC Online.",
+      "tag": "Demo",
+      "logoUrl": "https://sfdcdemoimages.s3.eu-west-1.amazonaws.com/bbc/logo.png",
+      "archived": false
+    },
+    {
+      "id": "company-a",
+      "name": "Company A",
+      "path": "/company-a/",
+      "description": "",
+      "tag": "Demo",
+      "logoUrl": "https://sfdcdemoimages.s3.eu-west-1.amazonaws.com/company-a/logo.png",
+      "archived": false
+    },
+    {
+      "id": "company-b",
+      "name": "Company B",
+      "path": "/company-b/",
+      "description": "",
+      "tag": "Demo",
+      "logoUrl": "https://sfdcdemoimages.s3.eu-west-1.amazonaws.com/company-b/logo.png",
+      "archived": true
+    },
+    {
+      "id": "company-template",
+      "name": "Company Template",
+      "path": "/company-template/",
+      "description": "",
+      "tag": "Demo",
+      "logoUrl": "https://sfdcdemoimages.s3.eu-west-1.amazonaws.com/company-template/logo.png",
+      "archived": false
+    },
+    {
+      "id": "rossellimac",
+      "name": "RosselliMac",
+      "path": "/rossellimac/",
+      "description": "Echa un vistazo a los últimos productos de Apple. Varias opciones de financiación disponibles. Compra ahora.",
+      "tag": "Demo",
+      "logoUrl": "https://sfdcdemoimages.s3.eu-west-1.amazonaws.com/rossellimac/logo.png",
+      "archived": false
+    }
+  ]
+}

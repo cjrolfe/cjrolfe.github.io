@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{COMPANY_NAME}} • Demo</title>
+  <meta name="description" content="{{COMPANY_NAME}} demo environment." />
+  <meta name="company-tone" content="{{COMPANY_TONE}}" />
+  <link rel="stylesheet" href="/assets/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <div class="brand">
+        <div class="mark" aria-hidden="true"></div>
+        <div>
+          <div class="brand-name">{{COMPANY_NAME}}</div>
+          <div class="brand-sub">Demo environment</div>
+        </div>
+      </div>
+
+      <nav class="topbar-actions" aria-label="Company navigation">
+        <a class="btn ghost" href="/">Back to index</a>
+        {{#IF_WEBSITE}}
+        <a class="btn" href="{{COMPANY_WEBSITE}}" target="_blank" rel="noreferrer">Website</a>
+        {{/IF_WEBSITE}}
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <div class="hero-row">
+        <div>
+          <h1 style="margin:0 0 8px;">{{COMPANY_NAME}}</h1>
+          <p>{{COMPANY_SUMMARY}}</p>
+
+          <div class="hero-meta">
+            <span class="pill">Owner: Swordthain</span>
+            <span class="pill">Environment: Demo</span>
+            <span class="pill">Last updated: <span id="lu">—</span></span>
+          </div>
+        </div>
+
+        <div class="hero-card">
+          <div class="card-head" style="margin-bottom: 8px;">
+            <img class="logo"
+                 src="{{LOGO_URL}}"
+                 alt="{{COMPANY_NAME}} logo"
+                 loading="lazy" />
+            <div>
+              <div style="font-weight:650;">Logo</div>
+              <div style="opacity:.7;font-size:12px;">Served from S3</div>
+            </div>
+          </div>
+
+          <div style="opacity:.75;font-size:12px;line-height:1.4;">
+            Upload assets to S3: <code>{{S3_BUCKET_HINT}}</code><br/>
+            Logo path: <code>{{S3_LOGO_HINT}}</code>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {{#IF_SCREENSHOT}}
+    <section class="section">
+      <div class="section-head">
+        <h2>Website snapshot</h2>
+      </div>
+
+      <article class="card">
+        <img class="screenshot"
+             src="{{SCREENSHOT_PATH}}"
+             alt="{{COMPANY_NAME}} website screenshot"
+             loading="lazy" />
+        <div class="row" style="margin-top: 10px;">
+          <span class="tag">Auto-captured</span>
+          {{#IF_WEBSITE}}
+          <a class="btn ghost" href="{{COMPANY_WEBSITE}}" target="_blank" rel="noreferrer">Open website</a>
+          {{/IF_WEBSITE}}
+        </div>
+      </article>
+    </section>
+    {{/IF_SCREENSHOT}}
+
+    <section class="section">
+      <div class="grid">
+        <article class="card">
+          <h3>Demo links</h3>
+          <p>Add links to key pages/journeys for this company.</p>
+
+          <div class="row">
+            <span class="tag">Start</span>
+            <a class="btn" href="#todo">Open demo</a>
+          </div>
+        </article>
+
+        <article class="card">
+          <h3>Notes</h3>
+          <p>Credentials, constraints, known limitations, data refresh notes.</p>
+          <span class="tag">Internal</span>
+        </article>
+
+        <article class="card">
+          <h3>Optional: Embedded Messaging</h3>
+          <p>If you need Salesforce Embedded Messaging, paste your script near the bottom of this file.</p>
+          <span class="tag">Salesforce</span>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    document.getElementById("lu").textContent = new Date().toISOString().slice(0, 10);
+  </script>
+
+  <!--
+    If this company needs Salesforce Embedded Messaging, paste the snippet here,
+    just before </body>.
+  -->
+
+</body>
+</html>

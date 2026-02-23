@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Company A • Demo</title>
+  <link rel="stylesheet" href="/assets/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <div class="brand">
+        <div class="mark" aria-hidden="true"></div>
+        <div>
+          <div class="brand-name">Company A</div>
+          <div class="brand-sub">Demo environment</div>
+        </div>
+      </div>
+      <nav class="topbar-actions">
+        <a class="btn ghost" href="/">Back to index</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <div class="hero-row">
+        <div>
+          <h1 style="margin:0 0 8px;">Company A</h1>
+          <p>Agentforce demo site for Company A. Use this page as your “demo control panel”.</p>
+
+          <div class="hero-meta">
+            <span class="pill">Tag: Agentforce</span>
+            <span class="pill">Last updated: <span id="lu">—</span></span>
+          </div>
+        </div>
+
+        <div class="hero-card">
+          <div class="card-head" style="margin-bottom: 8px;">
+            <img class="logo"
+                 src="https://sfdcdemoimages.s3.eu-west-1.amazonaws.com/company-a/logo.png"
+                 alt="Company A logo" loading="lazy" />
+            <div>
+              <div style="font-weight:650;">Company A</div>
+              <div style="opacity:.7;font-size:12px;">Logo served from S3</div>
+            </div>
+          </div>
+          <div style="opacity:.75;font-size:12px;line-height:1.4;">
+            If the logo doesn’t load, check that object permissions allow public reads (or use CloudFront).
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="grid">
+        <article class="card">
+          <h3>Demo actions</h3>
+          <p>Add links to key journeys or pages for Company A.</p>
+          <div class="row">
+            <span class="tag">Start</span>
+            <a class="btn" href="#todo">Open demo</a>
+          </div>
+        </article>
+
+        <article class="card">
+          <h3>Sanity check</h3>
+          <p>Quick JS test to prove scripts execute on GitHub Pages.</p>
+          <div class="row">
+            <span class="tag">JS</span>
+            <button class="btn" id="btn" type="button">Click me</button>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    document.getElementById("lu").textContent = new Date().toISOString().slice(0, 10);
+    document.getElementById("btn").addEventListener("click", () => alert("JS works ✅"));
+  </script>
+</body>
+</html>
+

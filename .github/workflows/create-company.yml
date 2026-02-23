@@ -1,0 +1,102 @@
+name: Create company site
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  create-company:
+    if: |
+      contains(github.event.issue.labels.*.name, 'create-company') ||
+      startsWith(github.event.issue.title, 'Create company:') ||
+      contains(github.event.issue.body, '**Company name:**')
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Create company folder + AI summary + screenshot
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          # Optional repo variable override:
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
+        run: |
+          python3 scripts/create_company.py
+
+      - name: Generate assets/sites.json (keep it in sync)
+        run: python3 scripts/generate_sites.py
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: create company site from issue #${{ github.event.issue.number }}"
+            git push
+          fi
+
+      - name: Comment on the issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue_number = context.payload.issue.number;
+            const repo = context.repo;
+            await github.rest.issues.createComment({
+              ...repo,
+              issue_number,
+              body: "✅ Company site created and added to the index. It may take a minute for GitHub Pages to publish."
+            });
+
+      - name: Close issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue_number = context.payload.issue.number;
+            const repo = context.repo;
+            await github.rest.issues.update({
+              ...repo,
+              issue_number,
+              state: "closed"
+            });
+
+  notify-create-failure:
+    needs: create-company
+    if: failure()
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Comment on failure
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue_number = context.payload.issue.number;
+            const repo = context.repo;
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            await github.rest.issues.createComment({
+              ...repo,
+              issue_number,
+              body: `❌ Failed to create company site. This may be because the company folder already exists, the website could not be fetched, or another error occurred.\n\n[View workflow run](${runUrl})`
+            });
