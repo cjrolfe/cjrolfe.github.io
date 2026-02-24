@@ -1,5 +1,5 @@
 {
-  "updated": "2026-02-23",
+  "updated": "2026-02-24",
   "sites": [
     {
       "id": "bbc",
@@ -8,7 +8,7 @@
       "description": "The best of the BBC, with the latest news and sport headlines, weather, TV & radio highlights and much more from across the whole of BBC Online.",
       "tag": "Demo",
       "logoUrl": "https://sfdcdemoimages.s3.eu-west-1.amazonaws.com/bbc/logo.png",
-      "archived": false
+      "archived": true
     },
     {
       "id": "company-a",
