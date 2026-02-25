@@ -11,7 +11,7 @@ This repo powers a small **GitHub Pages directory of “company demo sites”**.
     * pulls basic text from the company website,
     * generates a short summary using OpenAI,
     * and attempts a Playwright screenshot.
-* Companies can be **archived / restored** (hidden from the landing page) via another issue-driven workflow.
+* Companies can be **archived, restored, or deleted** (permanently removed) via another issue-driven workflow.
 
 ## How it works
 
@@ -31,8 +31,9 @@ There are two main automations, both triggered by opening a GitHub Issue:
 * **Create company** (`.github/workflows/create-company.yml`)
   * Reads the issue body, creates a folder from `company-template/`, generates summary + optional screenshot,
     and updates `assets/sites.json`.
-* **Archive/restore company** (`.github/workflows/archive-company.yml`)
-  * Toggles `archived: true/false` for a company in `assets/sites.json`.
+* **Archive/restore/delete company** (`.github/workflows/archive-company.yml`)
+  * Archives or restores: toggles `archived: true/false` in `assets/sites.json`.
+  * Delete: removes the company from `assets/sites.json` and deletes its folder.
 
 There is also a helper workflow:
 
@@ -60,6 +61,11 @@ There is also a helper workflow:
 
 On the landing page (or the archived page), click **Archive** or **Restore**.
 That opens a pre-filled GitHub Issue; the workflow updates `assets/sites.json` and closes the issue.
+
+### Delete an archived company
+
+On the archived page, each company has a **Delete** button. Clicking it opens a pre-filled GitHub Issue.
+The workflow removes the company from `assets/sites.json` and deletes its folder. This action is permanent.
 
 ### Run scripts locally (optional)
 
@@ -110,11 +116,11 @@ If the key isn’t present, the workflow will fall back to the site meta descrip
 │  └─ index.html              # A generated company page (one folder per company)
 ├─ scripts/
 │  ├─ create_company.py       # Issue → create folder + summary + screenshot
-│  ├─ archive_company.py      # Issue → toggle archived flag in sites.json
+│  ├─ archive_company.py      # Issue → archive/restore/delete company in sites.json
 │  └─ generate_sites.py       # Scan folders → rebuild sites.json
 └─ .github/workflows/
    ├─ create-company.yml      # Issues → create company site
-   ├─ archive-company.yml     # Issues → archive/restore company
+   ├─ archive-company.yml     # Issues → archive/restore/delete company
    └─ generate-sites.yml      # Push/dispatch → regenerate sites.json
 ```
 

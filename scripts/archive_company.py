@@ -2,6 +2,7 @@
 import json
 import os
 import re
+import shutil
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -15,6 +16,7 @@ def parse_issue(issue_title: str, issue_body: str):
     Supports:
       Title: "Archive company: Acme"
       Title: "Restore company: Acme"
+      Title: "Delete company: Acme"
     Body must include:
       **Company id:** company-slug
     """
@@ -26,6 +28,8 @@ def parse_issue(issue_title: str, issue_body: str):
         action = "archive"
     elif title.lower().startswith("restore company:"):
         action = "restore"
+    elif title.lower().startswith("delete company:"):
+        action = "delete"
 
     m = re.search(r"\*\*Company id:\*\*\s*([a-z0-9\-]+)", body, flags=re.IGNORECASE)
     company_id = (m.group(1).strip() if m else "")
@@ -50,18 +54,29 @@ def main() -> int:
     if not isinstance(sites, list):
         raise ValueError("assets/sites.json has invalid format (sites is not a list).")
 
-    found = False
-    for s in sites:
-        if s.get("id") == company_id:
-            if action == "archive":
-                s["archived"] = True
-            else:
-                s["archived"] = False
-            found = True
-            break
+    if action == "delete":
+        if company_id == "company-template":
+            raise ValueError("Cannot delete company-template; it is required for creating new companies.")
+        found = any(s.get("id") == company_id for s in sites)
+        if not found:
+            raise ValueError(f"Company id '{company_id}' not found in assets/sites.json")
+        sites = [s for s in sites if s.get("id") != company_id]
+        company_dir = ROOT / company_id
+        if company_dir.exists() and company_dir.is_dir():
+            shutil.rmtree(company_dir)
+    else:
+        found = False
+        for s in sites:
+            if s.get("id") == company_id:
+                if action == "archive":
+                    s["archived"] = True
+                else:
+                    s["archived"] = False
+                found = True
+                break
 
-    if not found:
-        raise ValueError(f"Company id '{company_id}' not found in assets/sites.json")
+        if not found:
+            raise ValueError(f"Company id '{company_id}' not found in assets/sites.json")
 
     data["updated"] = datetime.utcnow().strftime("%Y-%m-%d")
     data["sites"] = sites

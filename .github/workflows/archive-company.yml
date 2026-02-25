@@ -13,6 +13,7 @@ jobs:
     if: |
       (startsWith(github.event.issue.title, 'Archive company:') ||
        startsWith(github.event.issue.title, 'Restore company:') ||
+       startsWith(github.event.issue.title, 'Delete company:') ||
        contains(github.event.issue.labels.*.name, 'archive-company')) &&
       contains(github.event.issue.body, '**Company id:**') &&
       !contains(github.event.issue.labels.*.name, 'create-company')
@@ -26,7 +27,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Archive/restore company in sites.json
+      - name: Archive/restore/delete company in sites.json
         env:
           ISSUE_TITLE: ${{ github.event.issue.title }}
           ISSUE_BODY: ${{ github.event.issue.body }}
@@ -43,7 +44,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "chore: archive/restore company from issue #${{ github.event.issue.number }}"
+            git commit -m "chore: archive/restore/delete company from issue #${{ github.event.issue.number }}"
             git push
           fi
 
@@ -56,7 +57,7 @@ jobs:
             await github.rest.issues.createComment({
               ...repo,
               issue_number,
-              body: "✅ Updated archive status. The landing page may take a minute to refresh on GitHub Pages."
+              body: "✅ Completed. The landing page may take a minute to refresh on GitHub Pages."
             });
 
       - name: Close issue
@@ -88,5 +89,5 @@ jobs:
             await github.rest.issues.createComment({
               ...repo,
               issue_number,
-              body: `❌ Failed to archive/restore company. The company id may not exist in sites.json, or another error occurred.\n\n[View workflow run](${runUrl})`
+              body: `❌ Failed to archive/restore/delete company. The company id may not exist in sites.json, company-template cannot be deleted, or another error occurred.\n\n[View workflow run](${runUrl})`
             });

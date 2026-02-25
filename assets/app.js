@@ -51,6 +51,27 @@
     );
   }
 
+  function issueUrlForDeleteAction(site) {
+    const title = `Delete company: ${site.name}`;
+    const body = [
+      `### Company delete request`,
+      ``,
+      `**Company id:** ${site.id}`,
+      `**Company name:** ${site.name}`,
+      `**Action:** delete`,
+      ``,
+      `---`,
+      `Created from the GitHub Pages Archived page.`
+    ].join("\n");
+
+    return (
+      `https://github.com/cjrolfe/cjrolfe.github.io/issues/new` +
+      `?title=${encodeURIComponent(title)}` +
+      `&labels=${encodeURIComponent("archive-company")}` +
+      `&body=${encodeURIComponent(body)}`
+    );
+  }
+
   function render(filterText = "") {
     const q = (filterText || "").toLowerCase();
 
@@ -91,6 +112,7 @@
             <span class="tag">${s.tag || "Demo"}</span>
             ${!isArchivedView ? `<a class="btn" href="${s.path}">Open</a>` : ""}
             <a class="btn ghost" href="${actionUrl}" target="_blank" rel="noreferrer">${actionLabel}</a>
+            ${isArchivedView && s.id !== "company-template" ? `<a class="btn ghost" href="${issueUrlForDeleteAction(s)}" target="_blank" rel="noreferrer">Delete</a>` : ""}
           </div>
         </article>
       `;
