@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Swordthain Demo Sites — Codebase Diagram</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; font-size: 14px; max-width: 1200px; margin: 0 auto; padding: 2rem; }
+    h1 { color: #333; }
+    .diagram { margin: 2rem 0; padding: 1rem; background: #f9f9f9; border-radius: 8px; }
+    .mermaid { display: flex; justify-content: center; }
+    .section { margin: 3rem 0; }
+    .section h2 { color: #555; border-bottom: 1px solid #ddd; padding-bottom: 0.5rem; }
+  </style>
+</head>
+<body>
+  <h1>Swordthain Demo Sites — Codebase Diagram</h1>
+  <p>A GitHub Pages directory of company demo sites with issue-driven automation.</p>
+
+  <div class="section">
+    <h2>1. High-level architecture</h2>
+    <div class="diagram">
+      <pre class="mermaid">
+flowchart TB
+    subgraph Frontend["Frontend (Static)"]
+        index["index.html\nLanding page"]
+        archived["archived.html\nArchived view"]
+        app["app.js\nFetch sites, render cards,\nmodal, issue links"]
+        styles["styles.css\nGlobal styling"]
+    end
+
+    subgraph Data["Data layer"]
+        sites["sites.json\nSource of truth\nfor company registry"]
+    end
+
+    subgraph CompanyPages["Company pages"]
+        template["company-template/\nindex.html"]
+        companyA["company-a/\nindex.html"]
+        companyB["company-b/\nindex.html"]
+        rossellimac["rossellimac/\nindex.html"]
+    end
+
+    subgraph Automation["GitHub Actions"]
+        createWF["create-company.yml"]
+        archiveWF["archive-company.yml"]
+        generateWF["generate-sites.yml"]
+    end
+
+    subgraph Scripts["Python scripts"]
+        createScript["create_company.py"]
+        archiveScript["archive_company.py"]
+        generateScript["generate_sites.py"]
+    end
+
+    index --> app
+    archived --> app
+    app --> sites
+    index --> styles
+    archived --> styles
+
+    createWF --> createScript
+    archiveWF --> archiveScript
+    generateWF --> generateScript
+
+    createScript --> template
+    createScript --> sites
+    archiveScript --> sites
+    generateScript --> sites
+
+    sites -.-> companyA
+    sites -.-> companyB
+    sites -.-> rossellimac
+      </pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>2. User flow & issue-driven automation</h2>
+    <div class="diagram">
+      <pre class="mermaid">
+flowchart LR
+    subgraph User["User actions"]
+        U1["Create company\n(modal)"]
+        U2["Archive / Restore\n(button)"]
+        U3["Delete\n(archived page)"]
+    end
+
+    subgraph GitHub["GitHub Issues"]
+        I1["Issue: create-company"]
+        I2["Issue: archive-company"]
+        I3["Issue: archive-company\n(delete)"]
+    end
+
+    subgraph Workflows["Workflows"]
+        W1["create-company.yml"]
+        W2["archive-company.yml"]
+    end
+
+    subgraph Results["Results"]
+        R1["New folder from template\n+ AI summary + screenshot\n+ update sites.json"]
+        R2["Toggle archived flag\nor delete folder"]
+    end
+
+    U1 --> I1 --> W1 --> R1
+    U2 --> I2 --> W2 --> R2
+    U3 --> I3 --> W2 --> R2
+      </pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>3. Create company workflow (detail)</h2>
+    <div class="diagram">
+      <pre class="mermaid">
+flowchart TB
+    A["Issue opened\n(label: create-company)"]
+    B["Checkout repo"]
+    C["create_company.py"]
+    D["Parse issue body:\nname, website, tone"]
+    E["Copy company-template/\n→ &lt;slug&gt;/"]
+    F["Fetch website\n(BeautifulSoup)"]
+    G["OpenAI summary\n(optional)"]
+    H["Playwright screenshot\n(optional)"]
+    I["generate_sites.py"]
+    J["Commit & push"]
+    K["Comment & close issue"]
+
+    A --> B --> C
+    C --> D --> E
+    C --> F
+    F --> G --> H
+    E --> I
+    H --> I
+    I --> J --> K
+      </pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>4. Archive / restore / delete workflow</h2>
+    <div class="diagram">
+      <pre class="mermaid">
+flowchart TB
+    A["Issue opened\n(Archive/Restore/Delete company: X)"]
+    B["archive_company.py"]
+    C{"Action?"}
+    D["archive: set archived=true\nin sites.json"]
+    E["restore: set archived=false\nin sites.json"]
+    F["delete: remove from sites.json\n+ delete folder"]
+    G["Commit & push"]
+    H["Comment & close issue"]
+
+    A --> B --> C
+    C -->|archive| D
+    C -->|restore| E
+    C -->|delete| F
+    D --> G
+    E --> G
+    F --> G
+    G --> H
+      </pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>5. File structure</h2>
+    <div class="diagram">
+      <pre class="mermaid">
+flowchart TB
+    subgraph Root["/"]
+        index["index.html"]
+        archived["archived.html"]
+        cname["CNAME"]
+    end
+
+    subgraph Assets["assets/"]
+        app["app.js"]
+        css["styles.css"]
+        sites["sites.json"]
+        screenshots["screenshots/"]
+    end
+
+    subgraph Template["company-template/"]
+        tpl["index.html"]
+    end
+
+    subgraph Companies["&lt;company-id&gt;/"]
+        c1["index.html\n(per company)"]
+    end
+
+    subgraph Scripts["scripts/"]
+        create["create_company.py"]
+        archive["archive_company.py"]
+        generate["generate_sites.py"]
+    end
+
+    subgraph Workflows[".github/workflows/"]
+        w1["create-company.yml"]
+        w2["archive-company.yml"]
+        w3["generate-sites.yml"]
+    end
+
+    index --> app
+    index --> css
+    archived --> app
+    app --> sites
+    create --> tpl
+    create --> sites
+    archive --> sites
+    generate --> sites
+      </pre>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>6. Data flow: sites.json</h2>
+    <div class="diagram">
+      <pre class="mermaid">
+flowchart LR
+    subgraph Writers["Writers"]
+        create["create_company.py\n(adds entry)"]
+        archive["archive_company.py\n(toggle archived / remove)"]
+        generate["generate_sites.py\n(rebuild from folders)"]
+    end
+
+    subgraph Readers["Readers"]
+        app["app.js\n(fetch & render cards)"]
+    end
+
+    subgraph Data["sites.json"]
+        schema["updated: date\nsites: [{id, name, path,\ndescription, tag, logoUrl,\narchived}]"]
+    end
+
+    create --> Data
+    archive --> Data
+    generate --> Data
+    Data --> app
+      </pre>
+    </div>
+  </div>
+
+  <script>
+    mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+  </script>
+</body>
+</html>
