@@ -91,6 +91,32 @@
     </section>
   </main>
 
+  <script type='text/javascript'>
+	function initEmbeddedMessaging() {
+		try {
+			embeddedservice_bootstrap.settings.language = 'en_US'; // For example, enter 'en' or 'en-US'
+      // Enable Inline Mode
+      embeddedservice_bootstrap.settings.displayMode = 'inline';
+      // Target the specific div defined above
+      embeddedservice_bootstrap.settings.targetElement = document.getElementById('chat-container');
+      
+      // Initialize the bootstrap (Replace placeholders with your actual Org details)
+			embeddedservice_bootstrap.init(
+				'00DJ6000002FeRa',
+				'RosselliXSFv2',
+				'https://storm-0d6bdc021e90fa.my.site.com/ESWRosselliXSFv21771418751636',
+				{
+					scrt2URL: 'https://storm-0d6bdc021e90fa.my.salesforce-scrt.com'
+				}
+			);
+		} catch (err) {
+			console.error('Error loading Embedded Messaging: ', err);
+		}
+	};
+</script>
+<script type='text/javascript' src='https://storm-0d6bdc021e90fa.my.site.com/ESWRosselliXSFv21771418751636/assets/js/bootstrap.min.js' onload='initEmbeddedMessaging()'></script>
+
+
   <script>
     document.getElementById("lu").textContent = new Date().toISOString().slice(0, 10);
   </script>
