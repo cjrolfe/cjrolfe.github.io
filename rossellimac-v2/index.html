@@ -99,8 +99,10 @@
       const myElement = document.querySelector('.chat-container');
       embeddedservice_bootstrap.settings.targetElement = myElement;
       embeddedservice_bootstrap.settings.displayMode = 'inline';
+      embeddedservice_bootstrap.settings.headerEnabled = false; // Optional
+
       // Target the specific div defined above
-      embeddedservice_bootstrap.settings.targetElement = document.getElementById('chat-container');
+      // embeddedservice_bootstrap.settings.targetElement = document.getElementById('chat-container');
       
       // Initialize the bootstrap (Replace placeholders with your actual Org details)
 			embeddedservice_bootstrap.init(
