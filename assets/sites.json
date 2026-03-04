@@ -1,5 +1,5 @@
 {
-  "updated": "2026-02-27",
+  "updated": "2026-03-04",
   "sites": [
     {
       "id": "company-a",
@@ -35,6 +35,15 @@
       "description": "Echa un vistazo a los últimos productos de Apple. Varias opciones de financiación disponibles. Compra ahora.",
       "tag": "Demo",
       "logoUrl": "https://sfdcdemoimages.s3.eu-west-1.amazonaws.com/rossellimac/logo.png",
+      "archived": false
+    },
+    {
+      "id": "rossellimac-v2",
+      "name": "RosselliMac V2",
+      "path": "/rossellimac-v2/",
+      "description": "Echa un vistazo a los últimos productos de Apple. Varias opciones de financiación disponibles. Compra ahora.",
+      "tag": "Demo",
+      "logoUrl": "https://sfdcdemoimages.s3.eu-west-1.amazonaws.com/rossellimac-v2/logo.png",
       "archived": false
     }
   ]
