@@ -2,15 +2,6 @@
   "updated": "2026-03-05",
   "sites": [
     {
-      "id": "company-b",
-      "name": "Company B",
-      "path": "/company-b/",
-      "description": "",
-      "tag": "Demo",
-      "logoUrl": "https://sfdcdemoimages.s3.eu-west-1.amazonaws.com/company-b/logo.png",
-      "archived": true
-    },
-    {
       "id": "company-template",
       "name": "Company Template",
       "path": "/company-template/",
