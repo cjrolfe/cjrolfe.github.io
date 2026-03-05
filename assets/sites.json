@@ -1,5 +1,5 @@
 {
-  "updated": "2026-03-04",
+  "updated": "2026-03-05",
   "sites": [
     {
       "id": "company-a",
@@ -8,7 +8,7 @@
       "description": "",
       "tag": "Demo",
       "logoUrl": "https://sfdcdemoimages.s3.eu-west-1.amazonaws.com/company-a/logo.png",
-      "archived": false
+      "archived": true
     },
     {
       "id": "company-b",
