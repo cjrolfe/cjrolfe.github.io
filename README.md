@@ -4,10 +4,11 @@ This repo powers a small **GitHub Pages directory of “company demo sites”**.
 
 * The **landing page** (`/index.html`) reads `assets/sites.json` and shows each company as a card.
 * Each company lives in its **own folder** (e.g. `/bbc/`, `/rossellimac/`) with an `index.html`.
-* New companies can be created via a **“Create new company” modal** on the landing page.
+* New companies can be created via a **”Create new company” modal** on the landing page.
   * Submitting the modal opens a pre-filled **GitHub Issue**.
   * A GitHub Action turns that issue into a new company folder based on `/company-template/`.
-  * Optionally, the action:
+  * Users can optionally provide a **custom demo description** (shown on the company card).
+  * If no custom description is provided, the action:
     * pulls basic text from the company website,
     * generates a short summary using OpenAI,
     * and attempts a Playwright screenshot.
@@ -50,10 +51,15 @@ There is also a helper workflow:
 
 1. Open the landing page.
 2. Click **Create new company**.
-3. Fill in the fields and click **Create**.
-4. Submit the GitHub Issue that opens.
+3. Fill in the fields:
+   * **Company name** (required)
+   * **Company website** (optional) – used for screenshots and AI summary generation
+   * **Demo description** (optional) – provide a custom description for the demo site. If left empty, an AI-generated summary will be created from the website.
+   * **Tone** (optional) – affects the AI-generated summary style (ignored if you provide a custom description)
+4. Click **Create** and submit the GitHub Issue that opens.
 5. The Action will:
    * create a folder like `/my-company/`
+   * use your custom description OR generate one via OpenAI
    * update `assets/sites.json`
    * comment + close the issue.
 
@@ -88,7 +94,7 @@ python scripts/generate_sites.py
 
 ## OpenAI setup (optional)
 
-If you want the **create-company** workflow to generate summaries, set the repo secret:
+If you want the **create-company** workflow to automatically generate summaries (when no custom demo description is provided), set the repo secret:
 
 * `OPENAI_API_KEY`
 
@@ -96,7 +102,7 @@ Optional repo variable:
 
 * `OPENAI_MODEL` (defaults to `gpt-4.1-mini`)
 
-If the key isn’t present, the workflow will fall back to the site meta description/title.
+**Note:** If users provide a custom demo description in the creation modal, the OpenAI API will not be called. If no custom description is provided and the OpenAI key isn’t present, the workflow will fall back to the site meta description/title.
 
 ## File structure
 
