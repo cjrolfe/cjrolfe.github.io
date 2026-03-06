@@ -136,13 +136,14 @@
   const nameEl = document.getElementById("companyName");
   const urlEl = document.getElementById("companyUrl");
   const toneEl = document.getElementById("tone");
+  const demoDescEl = document.getElementById("demoDescription");
 
   const nameErrorEl = document.getElementById("nameError");
   const urlErrorEl = document.getElementById("urlError");
 
   const dialog = modal?.querySelector?.(".modal");
 
-  if (!openBtn || !modal || !closeBtn || !form || !createBtn || !nameEl || !dialog) return;
+  if (!openBtn || !modal || !closeBtn || !form || !createBtn || !nameEl || !demoDescEl || !dialog) return;
 
   let lastFocused = null;
 
@@ -208,6 +209,7 @@
       name: rawName,
       url: normalizedUrl || "",
       tone: (toneEl?.value || "Professional").trim(),
+      demoDescription: (demoDescEl?.value || "").trim(),
     };
   }
 
@@ -280,6 +282,7 @@
       ``,
       `**Company name:** ${data.name}`,
       `**Website:** ${data.url || "-"}`,
+      `**Demo description:** ${data.demoDescription || "-"}`,
       `**Tone:** ${data.tone}`,
       ``,
       `---`,

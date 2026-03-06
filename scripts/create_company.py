@@ -36,6 +36,7 @@ class CompanyRequest:
     name: str
     website: str = ""
     tone: str = "Professional"
+    demo_description: str = ""
 
 
 def slugify(s: str) -> str:
@@ -51,6 +52,7 @@ def parse_issue_body(body: str) -> CompanyRequest:
     Expects body lines like:
       **Company name:** Acme Ltd
       **Website:** https://acme.com
+      **Demo description:** Custom description for this demo
       **Tone:** Professional
     """
     def find(field: str) -> str:
@@ -59,6 +61,7 @@ def parse_issue_body(body: str) -> CompanyRequest:
 
     name = find("Company name")
     website = find("Website")
+    demo_description = find("Demo description")
     tone = find("Tone") or "Professional"
 
     if not name:
@@ -67,7 +70,15 @@ def parse_issue_body(body: str) -> CompanyRequest:
     if website == "-":
         website = ""
 
-    return CompanyRequest(name=name, website=website, tone=tone)
+    if demo_description == "-":
+        demo_description = ""
+
+    return CompanyRequest(
+        name=name,
+        website=website,
+        tone=tone,
+        demo_description=demo_description
+    )
 
 
 def fetch_site_text(url: str, max_chars: int = 12000) -> Tuple[str, str, str, str]:
@@ -401,8 +412,18 @@ def main() -> int:
 
     shutil.copytree(TEMPLATE_DIR, company_dir)
 
-    title, meta_desc, page_text, og_image = fetch_site_text(req.website)
-    summary = openai_summary(req, title, meta_desc, page_text)
+    # Determine final description: use demo_description if provided, otherwise generate AI summary
+    if req.demo_description:
+        print(f"Using provided demo description: {req.demo_description}")
+        final_summary = req.demo_description
+        # Still fetch for screenshot og:image fallback
+        _, _, _, og_image = fetch_site_text(req.website) if req.website else ("", "", "", "")
+    else:
+        print("No demo description provided; generating AI summary from website...")
+        title, meta_desc, page_text, og_image = fetch_site_text(req.website)
+        final_summary = openai_summary(req, title, meta_desc, page_text)
+        print(f"Generated summary: {final_summary}")
+
     screenshot_path = maybe_take_screenshot(slug, req.website)
 
     # fallback: use og:image if screenshot missing
@@ -411,10 +432,10 @@ def main() -> int:
 
     # Render index.html from template
     template_html = (TEMPLATE_DIR / "index.html").read_text(encoding="utf-8")
-    out_html = render_from_template(template_html, req, slug, summary, screenshot_path)
+    out_html = render_from_template(template_html, req, slug, final_summary, screenshot_path)
     (company_dir / "index.html").write_text(out_html, encoding="utf-8")
 
-    upsert_sites_json(slug, req.name, summary)
+    upsert_sites_json(slug, req.name, final_summary)
 
     print(f"Created {slug}/ with summary and assets updates.")
     if screenshot_path:
