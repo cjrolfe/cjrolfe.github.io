@@ -1,0 +1,23 @@
+# Salesforce
+.sfdx
+/src.orig
+/src
+.sf/
+.forceignore
+.sf
+.codegenie
+
+# Python
+*.pyc
+__pycache__
+
+# Editors
+*.sublime-project
+*.sublime-workspace
+.vscode
+.idea
+.project
+.settings
+
+# Misc
+.DS_Store
