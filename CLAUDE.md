@@ -16,9 +16,15 @@ This is a GitHub Pages-powered directory of company demo sites. Each company has
 
 ### Backend (Issue-Driven Automation)
 Three Python scripts power the automation:
-1. `scripts/create_company.py` - Creates a new company folder from `company-template/`, fetches website content, generates an AI summary via OpenAI, optionally takes a Playwright screenshot, and updates `sites.json`
+1. `scripts/create_company.py` - Creates a new company folder from `company-template/`, fetches website content, generates an AI summary via configured provider (OpenAI or Anthropic), optionally takes a Playwright screenshot, and updates `sites.json`
 2. `scripts/archive_company.py` - Toggles the `archived` flag in `sites.json` or permanently deletes a company folder
 3. `scripts/generate_sites.py` - Scans all folders with `index.html` (excluding `.github`, `assets`, `scripts`) and rebuilds `sites.json`
+
+The AI provider system uses a modular architecture in `scripts/ai_providers/`:
+- `base.py` - Abstract base class with shared retry logic
+- `openai_provider.py` - OpenAI implementation
+- `anthropic_provider.py` - Anthropic Claude implementation
+- `__init__.py` - Factory function for provider selection
 
 ### GitHub Actions Workflows
 - `.github/workflows/create-company.yml` - Triggers on issues with title "Create company:" or label "create-company"
@@ -107,7 +113,7 @@ Since this is a static site, you can:
 4. When issue is opened, `create-company.yml` workflow runs:
    - Copies `company-template/` to `/<company-id>/`
    - Fetches website text (title, meta description, page content)
-   - Calls OpenAI API (if `OPENAI_API_KEY` secret exists) to generate a summary
+   - Calls AI provider (OpenAI or Anthropic, if configured) to generate a summary
    - Takes a Playwright screenshot (if website allows it)
    - Renders `index.html` from template with all variables
    - Updates `assets/sites.json` with new company entry
@@ -128,22 +134,42 @@ Since this is a static site, you can:
    - Deletes the entire `/<company-id>/` folder
 5. **This is permanent and cannot be undone**
 
-## OpenAI Integration
+## AI Provider Integration
 
 ### Configuration
-- Set repository secret: `OPENAI_API_KEY`
-- Optional repository variable: `OPENAI_MODEL` (defaults to `gpt-4.1-mini`)
+- Set repository secret: `OPENAI_API_KEY` or `ANTHROPIC_API_KEY`
+- Set repository variable: `AI_PROVIDER` (values: `openai`, `anthropic`, `none`)
+- Optional variables: `OPENAI_MODEL`, `ANTHROPIC_MODEL`, `AI_TEMPERATURE`, `AI_MAX_TOKENS`
+
+### Supported Providers
+1. **OpenAI** - Uses `/v1/responses` endpoint
+   - Default model: `gpt-4.1-mini`
+   - Other models: `gpt-4o-mini`, `gpt-4o`
+2. **Anthropic** - Uses `/v1/messages` endpoint
+   - Default model: `claude-3-5-haiku-20241022` (fast, cost-effective)
+   - Other models: `claude-3-5-sonnet-20241022`, `claude-opus-4-6`
+
+### Provider Selection Logic
+1. If `AI_PROVIDER=none` → skip AI (use fallback)
+2. If `AI_PROVIDER=anthropic` → use Anthropic (requires `ANTHROPIC_API_KEY`)
+3. If `AI_PROVIDER=openai` → use OpenAI (requires `OPENAI_API_KEY`)
+4. If `AI_PROVIDER` not set and `OPENAI_API_KEY` exists → use OpenAI (legacy mode)
+5. Otherwise → use fallback (no AI)
 
 ### Fallback Behavior
-If OpenAI API is unavailable (no key, rate limit, or error):
-- Falls back to the website's meta description
+If AI provider is unavailable (no key, rate limit, or error):
+- Falls back to website's meta description
 - Or uses: `"[Company Name] — demo environment based on publicly available information."`
-- The script **never fails** due to OpenAI issues
+- The script **never fails** due to AI issues
 
 ### API Details
-- Uses OpenAI Responses API: `https://api.openai.com/v1/responses`
-- Retry logic: 5 attempts with exponential backoff + jitter for 429/5xx errors
-- Input limited to first 8000 chars of page text to reduce cost
+- **Retry logic:** 5 attempts with exponential backoff + jitter for 429/5xx errors
+- **Input limited** to first 8000 chars of page text to reduce cost
+- **Temperature:** 0.4 (configurable via `AI_TEMPERATURE`)
+- **Max tokens:** 150 (configurable via `AI_MAX_TOKENS`)
+
+### Adding New Providers
+Create `scripts/ai_providers/new_provider.py` extending `AIProvider` base class, implement 6 abstract methods, and add to factory.
 
 ## Playwright Screenshot Logic
 

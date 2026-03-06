@@ -12,8 +12,6 @@ import os
 import re
 import shutil
 import sys
-import time
-import random
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -129,121 +127,51 @@ def fetch_site_text(url: str, max_chars: int = 12000) -> Tuple[str, str, str, st
     return (title, meta_desc, text, og_image)
 
 
-def openai_summary(company: CompanyRequest, title: str, meta_desc: str, page_text: str) -> str:
+def ai_summary(company: CompanyRequest, title: str, meta_desc: str, page_text: str) -> str:
     """
-    Uses the OpenAI Responses API to create a short 1–2 sentence summary.
+    Uses configured AI provider to create a short 1–2 sentence summary.
+    Falls back to meta description / generic text if AI is unavailable.
 
-    Resilient behaviour:
-    - Retries on 429 and 5xx with exponential backoff + jitter
-    - Falls back to meta description / title / generic text if API is unavailable
-    - Never raises, so the GitHub Action can still create the company folder
+    Supports OpenAI and Anthropic Claude providers via ai_providers module.
     """
     def fallback() -> str:
-        # Best-effort fallback if OpenAI is unavailable
+        # Best-effort fallback if AI is unavailable
         if meta_desc and len(meta_desc.strip()) >= 40:
             return meta_desc.strip()
         if title:
             return f"{company.name} — demo environment based on publicly available information."
         return "Demo environment for this company."
 
-    api_key = os.getenv("OPENAI_API_KEY", "").strip()
-    if not api_key:
+    try:
+        from ai_providers import create_provider, AIRequest
+
+        provider = create_provider()
+        if not provider:
+            return fallback()
+
+        # Keep input small to reduce cost (existing behavior)
+        page_text_small = page_text[:8000] if page_text else ""
+
+        request = AIRequest(
+            company_name=company.name,
+            website=company.website or "",
+            tone=company.tone,
+            title=title,
+            meta_description=meta_desc,
+            page_text=page_text_small,
+            temperature=float(os.getenv("AI_TEMPERATURE", "0.4")),
+            max_tokens=int(os.getenv("AI_MAX_TOKENS", "150"))
+        )
+
+        response = provider.generate_summary(request)
+
+        if response.summary:
+            return response.summary
         return fallback()
 
-    model = os.getenv("OPENAI_MODEL", "gpt-4.1-mini").strip() or "gpt-4.1-mini"
-
-    # Keep input small-ish to reduce cost and rate-limit pressure
-    page_text_small = page_text[:8000] if page_text else ""
-
-    prompt = f"""
-You are generating short blurbs for an internal demo-site directory.
-
-Company name: {company.name}
-Website: {company.website or "(not provided)"}
-Tone: {company.tone}
-
-Use the information below from the company's website (it may be partial or messy).
-Write a concise 1–2 sentence summary (max 45 words).
-No hype, no markdown, no quotes. Don't mention that you're an AI.
-
-Page title: {title}
-Meta description: {meta_desc}
-
-Extracted text:
-{page_text_small}
-""".strip()
-
-    payload = {
-        "model": model,
-        "input": [
-            {"role": "system", "content": "You write concise, factual company summaries for internal demo directories."},
-            {"role": "user", "content": prompt},
-        ],
-        "temperature": 0.4,
-    }
-
-    url = "https://api.openai.com/v1/responses"
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-    }
-
-    # Retry policy: 5 attempts, exponential backoff + jitter
-    max_attempts = 5
-    base_sleep = 1.5
-
-    for attempt in range(1, max_attempts + 1):
-        try:
-            resp = requests.post(url, headers=headers, json=payload, timeout=60)
-
-            # Success
-            if resp.status_code >= 200 and resp.status_code < 300:
-                data = resp.json()
-
-                parts = []
-                for item in data.get("output", []):
-                    if item.get("type") != "message":
-                        continue
-                    for c in item.get("content", []):
-                        if c.get("type") in ("output_text", "text"):
-                            t = c.get("text") or c.get("value") or ""
-                            if t:
-                                parts.append(t)
-
-                summary = " ".join(" ".join(parts).split()).strip()
-                return summary or fallback()
-
-            # Rate limit / transient errors: retry
-            if resp.status_code in (429, 500, 502, 503, 504):
-                retry_after = resp.headers.get("retry-after")
-                if retry_after:
-                    try:
-                        sleep_s = float(retry_after)
-                    except Exception:
-                        sleep_s = None
-                else:
-                    sleep_s = None
-
-                if attempt < max_attempts:
-                    # exponential backoff + jitter, or obey Retry-After if present
-                    backoff = (base_sleep * (2 ** (attempt - 1))) + random.uniform(0, 0.75)
-                    time.sleep(sleep_s if sleep_s is not None else backoff)
-                    continue
-
-                # out of retries
-                return fallback()
-
-            # Non-retryable error: fall back
-            return fallback()
-
-        except requests.RequestException:
-            if attempt < max_attempts:
-                backoff = (base_sleep * (2 ** (attempt - 1))) + random.uniform(0, 0.75)
-                time.sleep(backoff)
-                continue
-            return fallback()
-
-    return fallback()
+    except Exception as e:
+        print(f"AI provider error: {e}")
+        return fallback()
 
 
 
@@ -421,7 +349,7 @@ def main() -> int:
     else:
         print("No demo description provided; generating AI summary from website...")
         title, meta_desc, page_text, og_image = fetch_site_text(req.website)
-        final_summary = openai_summary(req, title, meta_desc, page_text)
+        final_summary = ai_summary(req, title, meta_desc, page_text)
         print(f"Generated summary: {final_summary}")
 
     screenshot_path = maybe_take_screenshot(slug, req.website)

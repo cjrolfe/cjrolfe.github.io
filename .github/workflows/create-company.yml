@@ -34,9 +34,14 @@ jobs:
       - name: Create company folder + AI summary + screenshot
         env:
           ISSUE_BODY: ${{ github.event.issue.body }}
+          # AI Provider configuration (optional)
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          # Optional repo variable override:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          AI_PROVIDER: ${{ vars.AI_PROVIDER }}
           OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
+          ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL }}
+          AI_TEMPERATURE: ${{ vars.AI_TEMPERATURE }}
+          AI_MAX_TOKENS: ${{ vars.AI_MAX_TOKENS }}
         run: |
           python3 scripts/create_company.py
 

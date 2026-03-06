@@ -92,17 +92,34 @@ Generate `assets/sites.json` from folders:
 python scripts/generate_sites.py
 ```
 
-## OpenAI setup (optional)
+## AI Provider Setup (Optional)
 
-If you want the **create-company** workflow to automatically generate summaries (when no custom demo description is provided), set the repo secret:
+This project can use AI providers (OpenAI or Anthropic) to generate company summaries. If no provider is configured, it falls back to website meta descriptions.
 
-* `OPENAI_API_KEY`
+### Configuration
 
-Optional repo variable:
+Set repository secrets and variables in **GitHub Settings → Secrets and variables → Actions**:
 
-* `OPENAI_MODEL` (defaults to `gpt-4.1-mini`)
+**For OpenAI (default):**
+1. Add secret: `OPENAI_API_KEY` = `sk-...`
+2. (Optional) Add variable: `OPENAI_MODEL` = `gpt-4.1-mini` (default)
 
-**Note:** If users provide a custom demo description in the creation modal, the OpenAI API will not be called. If no custom description is provided and the OpenAI key isn’t present, the workflow will fall back to the site meta description/title.
+**For Anthropic Claude:**
+1. Add secret: `ANTHROPIC_API_KEY` = `sk-ant-...`
+2. Add variable: `AI_PROVIDER` = `anthropic`
+3. (Optional) Add variable: `ANTHROPIC_MODEL` = `claude-3-5-haiku-20241022` (default)
+
+**To disable AI:**
+- Add variable: `AI_PROVIDER` = `none`
+
+**Backward Compatibility:** If `OPENAI_API_KEY` exists and `AI_PROVIDER` is not set, OpenAI is used automatically (legacy mode).
+
+### Supported Models
+
+**OpenAI:** `gpt-4.1-mini` (default), `gpt-4o-mini`, `gpt-4o`
+**Anthropic:** `claude-3-5-haiku-20241022` (default, fast/cheap), `claude-3-5-sonnet-20241022`, `claude-opus-4-6`
+
+**Note:** If users provide a custom demo description in the creation modal, the AI API will not be called. If no custom description is provided and no AI provider is configured, the workflow will fall back to the site meta description/title.
 
 ## File structure
 
@@ -121,6 +138,11 @@ Optional repo variable:
 ├─ <company-id>/
 │  └─ index.html              # A generated company page (one folder per company)
 ├─ scripts/
+│  ├─ ai_providers/           # AI provider abstraction layer
+│  │  ├─ __init__.py          # Factory function for provider selection
+│  │  ├─ base.py              # Abstract base class with shared retry logic
+│  │  ├─ openai_provider.py   # OpenAI implementation
+│  │  └─ anthropic_provider.py # Anthropic Claude implementation
 │  ├─ create_company.py       # Issue → create folder + summary + screenshot
 │  ├─ archive_company.py      # Issue → archive/restore/delete company in sites.json
 │  └─ generate_sites.py       # Scan folders → rebuild sites.json
