@@ -40,4 +40,4 @@ lambda/certifi/
 lambda/urllib3/
 lambda/charset_normalizer/
 lambda/idna/
-lambda/*.dist-info/
+lambda/*.dist-info/*.so
