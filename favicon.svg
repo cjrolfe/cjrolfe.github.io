@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <style>
+      .blade { fill: #c0c0c0; }
+      .hilt { fill: #8b7355; }
+      .grip { fill: #654321; }
+      .pommel { fill: #8b7355; }
+    </style>
+  </defs>
+
+  <!-- Blade -->
+  <path class="blade" d="M16 2 L18 14 L16 24 L14 14 Z"/>
+
+  <!-- Guard/Hilt -->
+  <rect class="hilt" x="10" y="14" width="12" height="2" rx="1"/>
+
+  <!-- Grip -->
+  <rect class="grip" x="14.5" y="16" width="3" height="8" rx="1.5"/>
+
+  <!-- Pommel -->
+  <circle class="pommel" cx="16" cy="25" r="2"/>
+</svg>
