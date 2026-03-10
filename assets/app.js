@@ -307,7 +307,8 @@
     } catch (err) {
       createBtn.disabled = false;
       createBtn.textContent = origLabel;
-      if (nameErrorEl) nameErrorEl.textContent = err.message || "Request failed";
+      const msg = err.message || "Request failed";
+      if (nameErrorEl) nameErrorEl.textContent = msg + (msg.includes("fetch") ? " Check API URL and CORS." : "");
     }
   });
 })();
