@@ -85,7 +85,7 @@
           <p>${s.description || ""}</p>
           <div class="row row-actions">
             <span class="tag">${s.tag || "Demo"}</span>
-            ${!isArchivedView ? `<a class="btn" href="${s.path}">Open</a>` : ""}
+            ${!isArchivedView ? `<a class="btn" href="${s.path}index.html">Open</a>` : ""}
             ${archiveBtn}
             ${deleteBtn || ""}
           </div>
