@@ -1,166 +1,183 @@
-# Swordthain Demo Sites (GitHub Pages)
+# Swordthain Demo Sites (AWS)
 
-This repo powers a small **GitHub Pages directory of “company demo sites”**.
+This repo powers a **static directory of company demo sites** hosted on AWS (S3 + CloudFront). Automation is provided by API Gateway + Lambda.
 
 * The **landing page** (`/index.html`) reads `assets/sites.json` and shows each company as a card.
 * Each company lives in its **own folder** (e.g. `/bbc/`, `/rossellimac/`) with an `index.html`.
-* New companies can be created via a **”Create new company” modal** on the landing page.
-  * Submitting the modal opens a pre-filled **GitHub Issue**.
-  * A GitHub Action turns that issue into a new company folder based on `/company-template/`.
-  * Users can optionally provide a **custom demo description** (shown on the company card).
-  * If no custom description is provided, the action:
-    * pulls basic text from the company website,
-    * generates a short summary using OpenAI,
-    * and attempts a Playwright screenshot.
-* Companies can be **archived, restored, or deleted** (permanently removed) via another issue-driven workflow.
+* New companies can be created via the **"Create new company"** modal on the landing page.
+  * Submitting the form calls an API endpoint. A Lambda function creates the company folder from `/company-template/`.
+  * Users can optionally provide a **custom demo description**. If left empty, the Lambda generates a short summary using OpenAI or Anthropic.
+  * Screenshots are skipped in Lambda; the site uses the website's `og:image` when available.
+* Companies can be **archived, restored, or deleted** via buttons that call the same API.
+
+## Hosting architecture
+
+| Component | Technology |
+|-----------|------------|
+| Static site | S3 bucket |
+| CDN | CloudFront |
+| Custom domain | Route 53 (swordthain.com) |
+| Automation | API Gateway + Lambda |
+| Logos | S3 (sfdcdemoimages, eu-west-1) |
 
 ## How it works
 
 ### Landing page + data
 
-The landing page is pure static HTML/CSS/JS:
-
-* `index.html` – the main directory UI (includes the “Create new company” modal)
+* `index.html` – main directory UI and "Create new company" modal
 * `archived.html` – lists archived companies
-* `assets/app.js` – fetches `assets/sites.json`, renders cards, handles search, and builds Issue links
-* `assets/sites.json` – the source of truth for what companies appear and how
+* `assets/app.js` – fetches `assets/sites.json`, renders cards, and calls the API for create/archive/restore/delete
+* `assets/sites.json` – source of truth for companies and metadata
 
-### Issue-driven automation
+### API + Lambda automation
 
-There are two main automations, both triggered by opening a GitHub Issue:
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/create` | POST | Create new company from `company-template/`, generate AI summary, update `sites.json` |
+| `/archive` | POST | Archive, restore, or delete a company (`action` + `companyId`) |
 
-* **Create company** (`.github/workflows/create-company.yml`)
-  * Reads the issue body, creates a folder from `company-template/`, generates summary + optional screenshot,
-    and updates `assets/sites.json`.
-* **Archive/restore/delete company** (`.github/workflows/archive-company.yml`)
-  * Archives or restores: toggles `archived: true/false` in `assets/sites.json`.
-  * Delete: removes the company from `assets/sites.json` and deletes its folder.
-
-There is also a helper workflow:
-
-* **Generate sites.json** (`.github/workflows/generate-sites.yml`)
-  * Rebuilds `assets/sites.json` by scanning folders that contain an `index.html`.
-  * Useful if someone adds/removes company folders manually.
-
-> ✅ Note: an older workflow `update-sites-date.yml` has been removed because `scripts/generate_sites.py`
-> already sets the `updated` date (and having both created overlap / potential workflow churn).
+The Lambda functions read and write content in the S3 bucket and invalidate CloudFront cache after updates.
 
 ## Usage
 
-### Create a new company (recommended)
+### Create a new company
 
 1. Open the landing page.
 2. Click **Create new company**.
-3. Fill in the fields:
+3. Fill in:
    * **Company name** (required)
-   * **Company website** (optional) – used for screenshots and AI summary generation
-   * **Demo description** (optional) – provide a custom description for the demo site. If left empty, an AI-generated summary will be created from the website.
-   * **Tone** (optional) – affects the AI-generated summary style (ignored if you provide a custom description)
-4. Click **Create** and submit the GitHub Issue that opens.
-5. The Action will:
-   * create a folder like `/my-company/`
-   * use your custom description OR generate one via OpenAI
-   * update `assets/sites.json`
-   * comment + close the issue.
+   * **Company website** (optional) – used for AI summary and og:image
+   * **Demo description** (optional) – custom description; if empty, AI-generated
+   * **Tone** (optional) – affects AI style when no custom description is provided
+4. Click **Create**. The API creates the company folder and updates `sites.json`.
 
 ### Archive / restore a company
 
-On the landing page (or the archived page), click **Archive** or **Restore**.
-That opens a pre-filled GitHub Issue; the workflow updates `assets/sites.json` and closes the issue.
+On the landing page or archived page, click **Archive** or **Restore**. The API updates `sites.json` immediately.
 
 ### Delete an archived company
 
-On the archived page, each company has a **Delete** button. Clicking it opens a pre-filled GitHub Issue.
-The workflow removes the company from `assets/sites.json` and deletes its folder. This action is permanent.
+On the archived page, click **Delete** on a company. Confirm the prompt. The API removes the company from `sites.json` and deletes its folder. This is permanent.
 
-### Run scripts locally (optional)
+## AI provider setup (AWS Secrets Manager)
 
-Requirements:
+Create a secret `swordthain/ai-keys` in Secrets Manager (eu-west-1) with JSON:
 
-* Python 3.11+
+```json
+{
+  "OPENAI_API_KEY": "sk-...",
+  "ANTHROPIC_API_KEY": "sk-ant-..."
+}
+```
 
-Install dependencies:
+Use the keys you need; omit the other.
+
+Set Lambda environment variable `AI_PROVIDER` to `openai` or `anthropic`. If unset, OpenAI is used when `OPENAI_API_KEY` exists.
+
+**Supported models:**
+
+* **OpenAI:** `gpt-4.1-mini` (default), `gpt-4o-mini`, `gpt-4o`
+* **Anthropic:** `claude-3-5-haiku-20241022` (default), `claude-3-5-sonnet-20241022`, `claude-opus-4-6`
+
+## Deployment
+
+### Deploy frontend to S3
+
+```bash
+aws s3 sync . s3://swordthain-demo-sites/ \
+  --exclude ".git/*" \
+  --exclude ".github/*" \
+  --exclude "lambda/*" \
+  --exclude "lambda.zip" \
+  --exclude "*.pyc" \
+  --exclude "__pycache__/*"
+```
+
+### Deploy Lambda
+
+```bash
+cd lambda
+python3 -m pip install -r requirements.txt -t .
+zip -r ../lambda.zip . -x "*.pyc" -x "__pycache__/*" -x "README.md"
+cd ..
+aws lambda update-function-code --function-name swordthain-automation --zip-file fileb://lambda.zip
+```
+
+### Invalidate CloudFront (optional)
+
+```bash
+aws cloudfront create-invalidation --distribution-id YOUR_DISTRIBUTION_ID --paths "/*"
+```
+
+## API URL configuration
+
+The frontend uses `window.SWORDTHAIN_API` for the API base URL. It is set in `index.html` and `archived.html`:
+
+```html
+<script>window.SWORDTHAIN_API = "https://YOUR_API_ID.execute-api.eu-west-1.amazonaws.com/prod";</script>
+```
+
+Get the URL from API Gateway → your API → Stages → Invoke URL. Ensure it includes the stage (e.g. `/prod`).
+
+## Local development
+
+### Run scripts locally (filesystem)
+
+The `scripts/` folder still has the original Python logic for local development:
 
 ```bash
 python -m pip install -r requirements.txt
-python -m playwright install --with-deps chromium
-```
-
-Generate `assets/sites.json` from folders:
-
-```bash
+python -m playwright install --with-deps chromium  # for screenshots
 python scripts/generate_sites.py
 ```
 
-## AI Provider Setup (Optional)
+To test create/archive with env vars:
 
-This project can use AI providers (OpenAI or Anthropic) to generate company summaries. If no provider is configured, it falls back to website meta descriptions.
+```bash
+ISSUE_BODY="**Company name:** Test Co\n**Website:** https://example.com\n**Tone:** Professional" python scripts/create_company.py
+ISSUE_TITLE="Archive company: Test Co" ISSUE_BODY="**Company id:** test-co" python scripts/archive_company.py
+```
 
-### Configuration
+### Preview the site
 
-Set repository secrets and variables in **GitHub Settings → Secrets and variables → Actions**:
+```bash
+python -m http.server 8000
+```
 
-**For OpenAI (default):**
-1. Add secret: `OPENAI_API_KEY` = `sk-...`
-2. (Optional) Add variable: `OPENAI_MODEL` = `gpt-4.1-mini` (default)
-
-**For Anthropic Claude:**
-1. Add secret: `ANTHROPIC_API_KEY` = `sk-ant-...`
-2. Add variable: `AI_PROVIDER` = `anthropic`
-3. (Optional) Add variable: `ANTHROPIC_MODEL` = `claude-3-5-haiku-20241022` (default)
-
-**To disable AI:**
-- Add variable: `AI_PROVIDER` = `none`
-
-**Backward Compatibility:** If `OPENAI_API_KEY` exists and `AI_PROVIDER` is not set, OpenAI is used automatically (legacy mode).
-
-### Supported Models
-
-**OpenAI:** `gpt-4.1-mini` (default), `gpt-4o-mini`, `gpt-4o`
-**Anthropic:** `claude-3-5-haiku-20241022` (default, fast/cheap), `claude-3-5-sonnet-20241022`, `claude-opus-4-6`
-
-**Note:** If users provide a custom demo description in the creation modal, the AI API will not be called. If no custom description is provided and no AI provider is configured, the workflow will fall back to the site meta description/title.
+Open `http://localhost:8000/`. Note: create/archive/delete buttons call the live API; there is no local API server.
 
 ## File structure
 
 ```text
 .
-├─ index.html                 # Landing page (directory)
+├─ index.html                 # Landing page (directory + create modal)
 ├─ archived.html              # Archived companies view
-├─ CNAME                      # Custom domain for GitHub Pages
+├─ CNAME                      # Custom domain (swordthain.com)
 ├─ assets/
-│  ├─ app.js                  # UI logic (render cards, modal, issue links)
-│  ├─ styles.css              # Global styling (includes modal styling)
-│  ├─ sites.json              # Generated/maintained company registry
-│  └─ screenshots/            # Optional screenshots taken during creation
+│  ├─ app.js                  # UI logic + API calls
+│  ├─ styles.css              # Global styling
+│  ├─ sites.json              # Company registry
+│  └─ screenshots/            # Screenshots (legacy; Lambda uses og:image)
 ├─ company-template/
-│  └─ index.html              # Template used when creating new companies
+│  └─ index.html              # Template for new companies
 ├─ <company-id>/
-│  └─ index.html              # A generated company page (one folder per company)
-├─ scripts/
-│  ├─ ai_providers/           # AI provider abstraction layer
-│  │  ├─ __init__.py          # Factory function for provider selection
-│  │  ├─ base.py              # Abstract base class with shared retry logic
-│  │  ├─ openai_provider.py   # OpenAI implementation
-│  │  └─ anthropic_provider.py # Anthropic Claude implementation
-│  ├─ create_company.py       # Issue → create folder + summary + screenshot
-│  ├─ archive_company.py      # Issue → archive/restore/delete company in sites.json
-│  └─ generate_sites.py       # Scan folders → rebuild sites.json
-└─ .github/workflows/
-   ├─ create-company.yml      # Issues → create company site
-   ├─ archive-company.yml     # Issues → archive/restore/delete company
-   └─ generate-sites.yml      # Push/dispatch → regenerate sites.json
+│  └─ index.html              # Generated company page
+├─ lambda/                    # Lambda package (API backend)
+│  ├─ lambda_function.py      # Handler (routes /create, /archive)
+│  ├─ create_company.py      # Create logic (S3-adapted)
+│  ├─ archive_company.py     # Archive/restore/delete (S3-adapted)
+│  ├─ generate_sites.py       # Rebuild sites.json (S3-adapted)
+│  ├─ s3_utils.py            # S3 + CloudFront helpers
+│  ├─ ai_providers/          # OpenAI + Anthropic
+│  └─ requirements.txt
+├─ scripts/                   # Original scripts (local/dev use)
+│  ├─ ai_providers/
+│  ├─ create_company.py
+│  ├─ archive_company.py
+│  └─ generate_sites.py
+└─ .github/workflows/         # Legacy (GitHub Actions, no longer used)
 ```
 
-## Troubleshooting
+## Legacy: GitHub Pages + Actions
 
-* **Modal appears at the bottom of the page**
-  * That usually means the modal/backdrop isn’t `position: fixed`.
-  * Ensure you’re using the latest `assets/styles.css` (this repo includes proper modal styling).
-
-* **Create-company workflow fails with missing dependencies**
-  * This repo includes `requirements.txt`. If you removed it previously, the workflow would fail.
-
-* **A website blocks screenshotting**
-  * The script detects common bot-block pages and will skip screenshots if it looks blocked.
-  * The company will still be created.
+This project was originally hosted on GitHub Pages with GitHub Actions. The `.github/workflows/` folder and `scripts/` remain for reference and local use. The live site now runs entirely on AWS.

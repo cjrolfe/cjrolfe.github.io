@@ -9,6 +9,8 @@
   const view = (document.body?.dataset?.view || "active").toLowerCase(); // active | archived
   const isArchivedView = view === "archived";
 
+  const API_BASE = window.SWORDTHAIN_API || "";
+
   if (yearEl) yearEl.textContent = String(new Date().getFullYear());
 
   let sites = [];
@@ -24,58 +26,24 @@
     }
 
   } catch (e) {
-    if (cardsEl) cardsEl.innerHTML = `<div class="card"><h3>Couldn’t load site list</h3></div>`;
+    if (cardsEl) cardsEl.innerHTML = `<div class="card"><h3>Couldn't load site list</h3></div>`;
     return;
   }
 
-  function issueUrlForArchiveAction(site, action) {
-    // action: "archive" | "restore"
-    const verb = action === "restore" ? "Restore" : "Archive";
-    const title = `${verb} company: ${site.name}`;
-    const body = [
-      `### Company archive request`,
-      ``,
-      `**Company id:** ${site.id}`,
-      `**Company name:** ${site.name}`,
-      `**Action:** ${action}`,
-      ``,
-      `---`,
-      `Created from the GitHub Pages ${isArchivedView ? "Archived" : "Landing"} page.`
-    ].join("\n");
-
-    return (
-      `https://github.com/cjrolfe/cjrolfe.github.io/issues/new` +
-      `?title=${encodeURIComponent(title)}` +
-      `&labels=${encodeURIComponent("archive-company")}` +
-      `&body=${encodeURIComponent(body)}`
-    );
-  }
-
-  function issueUrlForDeleteAction(site) {
-    const title = `Delete company: ${site.name}`;
-    const body = [
-      `### Company delete request`,
-      ``,
-      `**Company id:** ${site.id}`,
-      `**Company name:** ${site.name}`,
-      `**Action:** delete`,
-      ``,
-      `---`,
-      `Created from the GitHub Pages Archived page.`
-    ].join("\n");
-
-    return (
-      `https://github.com/cjrolfe/cjrolfe.github.io/issues/new` +
-      `?title=${encodeURIComponent(title)}` +
-      `&labels=${encodeURIComponent("archive-company")}` +
-      `&body=${encodeURIComponent(body)}`
-    );
+  async function callArchiveApi(action, companyId) {
+    const res = await fetch(`${API_BASE}/archive`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action, companyId }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+    return data;
   }
 
   function render(filterText = "") {
     const q = (filterText || "").toLowerCase();
 
-    // Filter by archived flag based on the page
     const subset = sites.filter(s => {
       const isArchived = !!s.archived;
       return isArchivedView ? isArchived : !isArchived;
@@ -96,7 +64,14 @@
     cardsEl.innerHTML = filtered.map(s => {
       const action = isArchivedView ? "restore" : "archive";
       const actionLabel = isArchivedView ? "Restore" : "Archive";
-      const actionUrl = issueUrlForArchiveAction(s, action);
+
+      const archiveBtn = API_BASE
+        ? `<button type="button" class="btn ghost btn-archive" data-action="${action}" data-company-id="${s.id}">${actionLabel}</button>`
+        : ``;
+
+      const deleteBtn = isArchivedView && s.id !== "company-template" && API_BASE
+        ? `<button type="button" class="btn ghost btn-delete" data-company-id="${s.id}">Delete</button>`
+        : ``;
 
       return `
         <article class="card">
@@ -111,12 +86,47 @@
           <div class="row row-actions">
             <span class="tag">${s.tag || "Demo"}</span>
             ${!isArchivedView ? `<a class="btn" href="${s.path}">Open</a>` : ""}
-            <a class="btn ghost" href="${actionUrl}" target="_blank" rel="noreferrer">${actionLabel}</a>
-            ${isArchivedView && s.id !== "company-template" ? `<a class="btn ghost" href="${issueUrlForDeleteAction(s)}" target="_blank" rel="noreferrer">Delete</a>` : ""}
+            ${archiveBtn}
+            ${deleteBtn || ""}
           </div>
         </article>
       `;
     }).join("");
+
+    // Attach delegated handlers
+    cardsEl.querySelectorAll(".btn-archive").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const action = btn.dataset.action;
+        const companyId = btn.dataset.companyId;
+        btn.disabled = true;
+        btn.textContent = "...";
+        try {
+          await callArchiveApi(action, companyId);
+          window.location.reload();
+        } catch (e) {
+          btn.disabled = false;
+          btn.textContent = action === "restore" ? "Restore" : "Archive";
+          alert(e.message || "Request failed");
+        }
+      });
+    });
+
+    cardsEl.querySelectorAll(".btn-delete").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const companyId = btn.dataset.companyId;
+        if (!confirm(`Permanently delete ${companyId}? This cannot be undone.`)) return;
+        btn.disabled = true;
+        btn.textContent = "...";
+        try {
+          await callArchiveApi("delete", companyId);
+          window.location.reload();
+        } catch (e) {
+          btn.disabled = false;
+          btn.textContent = "Delete";
+          alert(e.message || "Request failed");
+        }
+      });
+    });
   }
 
   searchEl?.addEventListener("input", () => render(searchEl.value));
@@ -124,7 +134,7 @@
 })();
 
 
-// ===== Create new company modal logic (Issue → Action creates site + AI summary) =====
+// ===== Create new company modal logic (API creates site + AI summary) =====
 (function () {
   const openBtn = document.getElementById("openCreate");
   const modal = document.getElementById("createModal");
@@ -142,6 +152,7 @@
   const urlErrorEl = document.getElementById("urlError");
 
   const dialog = modal?.querySelector?.(".modal");
+  const API_BASE = window.SWORDTHAIN_API || "";
 
   if (!openBtn || !modal || !closeBtn || !form || !createBtn || !nameEl || !demoDescEl || !dialog) return;
 
@@ -152,7 +163,6 @@
       'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
     );
     return Array.from(focusables).filter((el) => {
-      // Only keep elements that are actually visible
       return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
     });
   }
@@ -167,25 +177,19 @@
   function normalizeUrl(raw) {
     const trimmed = (raw || "").trim();
     if (!trimmed) return "";
-
-    // Allow "example.com" or "www.example.com" by adding https://
     const withScheme = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
-
     let parsed;
     try {
       parsed = new URL(withScheme);
     } catch (e) {
       return null;
     }
-
     if (!["http:", "https:"].includes(parsed.protocol)) return null;
-
     return parsed.toString();
   }
 
   function validate() {
     clearErrors();
-
     const rawName = (nameEl.value || "").trim();
     const rawUrl = (urlEl?.value || "").trim();
 
@@ -197,9 +201,8 @@
     }
 
     const normalizedUrl = normalizeUrl(rawUrl);
-
     if (rawUrl && !normalizedUrl) {
-      if (urlErrorEl) urlErrorEl.textContent = "That doesn’t look like a valid website address.";
+      if (urlErrorEl) urlErrorEl.textContent = "That doesn't look like a valid website address.";
       urlEl?.setAttribute("aria-invalid", "true");
       urlEl?.focus();
       return null;
@@ -220,7 +223,6 @@
     if (isOpen) {
       lastFocused = document.activeElement;
       clearErrors();
-      // Let the browser paint first so focus doesn't scroll oddly on mobile
       setTimeout(() => nameEl.focus(), 0);
     } else {
       clearErrors();
@@ -240,14 +242,12 @@
     if (e.target === modal) setOpen(false);
   });
 
-  // Focus trap + Escape
   modal.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       e.preventDefault();
       setOpen(false);
       return;
     }
-
     if (e.key !== "Tab") return;
 
     const focusables = getFocusable();
@@ -269,33 +269,45 @@
     }
   });
 
-  // Submit (Enter key inside inputs will naturally submit)
-  form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const data = validate();
     if (!data) return;
 
-    const title = `Create company: ${data.name}`;
-    const body = [
-      `### Company request`,
-      ``,
-      `**Company name:** ${data.name}`,
-      `**Website:** ${data.url || "-"}`,
-      `**Demo description:** ${data.demoDescription || "-"}`,
-      `**Tone:** ${data.tone}`,
-      ``,
-      `---`,
-      `Created from the GitHub Pages index modal.`
-    ].join("\n");
+    if (!API_BASE) {
+      alert("API is not configured. Set window.SWORDTHAIN_API.");
+      return;
+    }
 
-    const issueUrl =
-      `https://github.com/cjrolfe/cjrolfe.github.io/issues/new` +
-      `?title=${encodeURIComponent(title)}` +
-      `&labels=${encodeURIComponent("create-company")}` +
-      `&body=${encodeURIComponent(body)}`;
+    const origLabel = createBtn.textContent;
+    createBtn.disabled = true;
+    createBtn.textContent = "Creating…";
 
-    window.open(issueUrl, "_blank", "noopener");
-    setOpen(false);
+    try {
+      const res = await fetch(`${API_BASE}/create`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: data.name,
+          website: data.url || "",
+          tone: data.tone,
+          demoDescription: data.demoDescription || "",
+        }),
+      });
+
+      const result = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(result.error || `Request failed (${res.status})`);
+      }
+
+      setOpen(false);
+      window.location.reload();
+    } catch (err) {
+      createBtn.disabled = false;
+      createBtn.textContent = origLabel;
+      if (nameErrorEl) nameErrorEl.textContent = err.message || "Request failed";
+    }
   });
 })();
